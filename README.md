@@ -24,7 +24,7 @@
 
 ## Introduction
 
-In this tutorial, I will use the sequencing data from [E-MTAB-8411](https://www.ebi.ac.uk/arrayexpress/experiments/E-MTAB-8411) to demonstrate how to use `topGO` and `clusterProfiler` to perform GO enrichment   analysis. 
+In this tutorial, I will use the sequencing data from [E-MTAB-8411](https://www.ebi.ac.uk/arrayexpress/experiments/E-MTAB-8411) to demonstrate how to use `topGO`, `clusterProfiler` and `Enrichr` via its R interface `enrichR` to perform GO enrichment analysis. 
 
 This RNA-seq dataset contains 5 wild-type (GK1, GK3, GK5, GK7 and GK9) and 4 macrophage-specific *Bmal1* knockout samples (GK2, GK4, GK6 and GK10). The fastq files were retreived from [ArrayExpress](https://www.ebi.ac.uk/arrayexpress/experiments/E-MTAB-8411/samples/) and processed with the follow steps:
 
