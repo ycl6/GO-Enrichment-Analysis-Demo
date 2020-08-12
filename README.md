@@ -14,6 +14,10 @@
 
 **enrichplot:** [Bioconductor](https://bioconductor.org/packages/enrichplot/)
 
+**Enrichr:** [Website](https://amp.pharm.mssm.edu/Enrichr/), [Paper](https://doi.org/10.1093/nar/gkw377)
+
+**enrichR:** [CRAN](https://CRAN.R-project.org/package=enrichR)
+
 **Demo Dataset:** [E-MTAB-8411](https://www.ebi.ac.uk/arrayexpress/experiments/E-MTAB-8411) from *[The clock gene Bmal1 inhibits macrophage motility, phagocytosis, and impairs defense against pneumonia.         ](https://doi.org/10.1073/pnas.1915932117) PNAS. 2020;117(3):1543-1551.*
 
 **License:** GPL-3.0
@@ -36,7 +40,7 @@ We will perform the enrichment analysis using output from `DESeq2`.
 
 Download the result table from GitHub
 
-```
+```S
 cd /ngs/GO-Enrichment-Analysis-Demo
 
 wget https://raw.githubusercontent.com/ycl6/GO-Enrichment-Analysis-Demo/master/DESeq2_DEG.txt
@@ -65,4 +69,6 @@ devtools::install_github("ycl6/topGO-feat", ref = "v2.41.0-barplot")
 ### 2. topGO (2_topGO.R; [HTML](https://ycl6.github.io/GO-Enrichment-Analysis-Demo/2_topGO.html))
 
 ### 3. clusterProfiler (3_clusterProfiler.R; [HTML](https://ycl6.github.io/GO-Enrichment-Analysis-Demo/3_clusterProfiler.html))
+
+### 4. Enrichr & enrichR (4_enrichR.R; [HTML](https://ycl6.github.io/GO-Enrichment-Analysis-Demo/4_enrichR.html))
 
