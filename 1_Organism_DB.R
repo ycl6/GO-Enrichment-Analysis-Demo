@@ -125,17 +125,18 @@ df[,c("title", "species")]
 #' 
 ## ----install-db-AnnotationHub-------------------------------------------------
 # Search df with keyword
-data.table::as.data.table(df[,c("title", "species")], keep.rownames = TRUE)[grep("Felis", species)]
+data.frame(df[grep("Felis", df$species), c("title", "species", "rdatadateadded")])
 
-# Retrieve package with ID "AH80647"
-org.Fc.eg.db <- ah[["AH80647"]]
+# Retrieve package with for "Felis catus"
+rn <- rownames(df[df$species == "Felis catus",])
+org.Fc.eg.db <- ah[[rn]]
 org.Fc.eg.db
 
 #' 
 #' ## Show record status
 #' 
 ## ----show-record-status-------------------------------------------------------
-recordStatus(ah, "AH80647")
+recordStatus(ah, rn)
 
 #' 
 #' ## Load from local cache
@@ -147,7 +148,7 @@ recordStatus(ah, "AH80647")
 hubCache(ah)
 
 # Load from cache
-org.Fc.eg.db <- ah[["AH80647"]]
+org.Fc.eg.db <- ah[[rn]]
 
 #' 
 #' ## Clear local cache
