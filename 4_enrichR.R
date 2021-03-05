@@ -113,10 +113,12 @@ head(dn.genes, 10)
 #' 
 ## ----use-bitr-----------------------------------------------------------------
 # Use fromType = "ENSEMBL" if your input identifier is Ensembl gene ID
-up.genes.df = clusterProfiler::bitr(up.genes, fromType = "ENSEMBL", toType = "SYMBOL", OrgDb = "org.Mm.eg.db")
+up.genes.df = clusterProfiler::bitr(up.genes, fromType = "ENSEMBL", toType = "SYMBOL", 
+				    OrgDb = "org.Mm.eg.db")
 head(up.genes.df, 10)
 
-dn.genes.df = clusterProfiler::bitr(dn.genes, fromType = "ENSEMBL", toType = "SYMBOL", OrgDb = "org.Mm.eg.db")
+dn.genes.df = clusterProfiler::bitr(dn.genes, fromType = "ENSEMBL", toType = "SYMBOL", 
+				    OrgDb = "org.Mm.eg.db")
 head(dn.genes.df, 10)
 
 #' 
@@ -166,7 +168,8 @@ dnEnriched_go <- enrichr(genes = dn.genes.df$SYMBOL, databases = dbs_go)
 class(upEnriched_go)
 names(upEnriched_go)
 
-head(upEnriched_go[[1]], 10)
+# View top 5 terms in the first element of the list
+head(upEnriched_go[[1]], 5)
 
 #' 
 #' ## Pathway analysis
@@ -180,7 +183,8 @@ dnEnriched_pw <- enrichr(genes = dn.genes.df$SYMBOL, databases = dbs_pw)
 class(upEnriched_pw)
 names(upEnriched_pw)
 
-head(upEnriched_pw[[1]], 10)
+# View top 5 terms in the first element of the list
+head(upEnriched_pw[[1]], 5)
 
 #' 
 #' ## Diseases/Drugs analysis
@@ -194,153 +198,13 @@ dnEnriched_dd <- enrichr(genes = dn.genes.df$SYMBOL, databases = dbs_dd)
 class(upEnriched_dd)
 names(upEnriched_dd)
 
-head(upEnriched_dd[[1]], 10)
-
-#' 
-#' # Create functions
-#' 
-#' ## `.enrichment_prep_df` function
-#' 
-## ----enrichment_prep_df-------------------------------------------------------
-.enrichment_prep_df <- function(df, showTerms, orderBy) {
-
-    if(is.null(showTerms)) {
-	showTerms = nrow(df)
-    } else if(!is.numeric(showTerms)) {
-        stop(paste0("showTerms '", showTerms, "' is invalid."))
-    }
-
-    Annotated <- as.numeric(sub("^\\d+/", "", as.character(df$Overlap)))
-    Significant <- as.numeric(sub("/\\d+$", "", as.character(df$Overlap)))
-
-    # Build data frame
-    df <- cbind(df, data.frame(Annotated = Annotated, Significant = Significant, 
-			       stringsAsFactors = FALSE))
-
-    # Order data frame (P.value or Combined.Score)
-    if(orderBy == "Combined.Score") {
-        idx <- order(df$Combined.Score, decreasing = TRUE)
-    } else {
-        idx <- order(df$P.value, decreasing = FALSE)
-    }
-    df <- df[idx,]
-
-    # Subset to selected number of terms
-    if(showTerms <= nrow(df)) {
-        df <- df[1:showTerms,]
-    }
-
-    return(df)
-}
-
-#' 
-#' ## `plotEnrich` function
-#' 
-#' Here, we will use a `plotEnrich` function to visualise Enrichr results as bar plots.
-#' 
-## ----plotEnrich---------------------------------------------------------------
-plotEnrich <- function(df, showTerms = 20, numChar = 40, y = "Count", orderBy = "P.value", 
-		       xlab = NULL, ylab = NULL, title = NULL) {
-
-    if(!is.numeric(numChar)) {
-        stop(paste0("numChar '", numChar, "' is invalid."))
-    }
-
-    df <- .enrichment_prep_df(df, showTerms, orderBy)
-
-    # Create trimmed name (as seen in topGO)
-    shortName <- paste(substr(df$Term, 1, numChar),
-                       ifelse(nchar(df$Term) > numChar, '...', ''), sep = '')
-    df$shortName = shortName
-    df$shortName <- factor(df$shortName, levels = rev(unique(df$shortName)))
-    df$Ratio <- df$Significant/df$Annotated
-
-    # Define fill variable (P.value or Combined.Score)
-    if(orderBy == "Combined.Score") {
-	fill <- "Combined.Score"
-    } else {
-       	fill <- "P.value"
-    }
-
-    # Define y variable (Count or Ratio)
-    if(y != "Ratio") {
-        y <- "Significant"
-    }
-
-    # Define variable mapping
-    map <- aes_string(x = "shortName", y = y, fill = fill)
-
-    # Define labels
-    if(is.null(xlab)) {
-        xlab <- "Enriched terms"
-    }
-
-    if(is.null(ylab)) {
-        if(y == "Ratio") {
-            ylab <- "Gene ratio"
-        } else {
-            ylab <- "Gene count"
-        }
-    }
-
-    if(is.null(title)) {
-        title <- "Enrichment analysis by Enrichr"
-    }
-
-    # Make the ggplot
-    p <- ggplot(df, map) + geom_bar(stat = "identity") + coord_flip() + theme_bw()
-
-    if(orderBy == "Combined.Score") {
-        p <- p + scale_fill_continuous(low = "blue", high = "red") + 
-		guides(fill = guide_colorbar(title = "Combined Score", reverse = FALSE))
-    } else {
-	p <- p + scale_fill_continuous(low = "red", high = "blue") + 
-		guides(fill = guide_colorbar(title = "P value", reverse = TRUE))
-    }
-
-    # Adjust theme components
-    p <- p + theme(axis.text.x = element_text(colour = "black", vjust = 1), 
-		   axis.text.y = element_text(colour = "black", hjust = 1),
-		   axis.title = element_text(color = "black", margin = margin(10, 5, 0, 0)),
-		   axis.title.y = element_text(angle = 90))
-
-    p <- p + xlab(xlab) + ylab(ylab) + ggtitle(title)
-
-    return(p)
-}
-
-#' 
-#' ## `printEnrich` function
-#' 
-#' Here, we will use a `printEnrich` function to output Enrichr results to text files.
-#' 
-## ----printEnrich--------------------------------------------------------------
-printEnrich <- function(data, prefix = "enrichr", showTerms = NULL, columns = c(1:9)) {
-
-    if(!is.numeric(columns)) {
-        stop(paste0("columns '", columns, "' is invalid."))
-    }
-
-    for (i in 1:length(data)) {
-        dbname <- names(data)[i]
-        df <- data[[i]]
-
-	df <- .enrichment_prep_df(df, showTerms, orderBy = "P.value")
-	df <- df[, !colnames(df) %in% c("Annotated", "Significant")]
-
-        if(any(columns > ncol(df))) {
-            stop("Undefined columns selected")
-        }
-
-	filename <- paste0(prefix, "_", dbname, ".txt")
-	write.table(df, file = filename, sep = "\t", quote = F, row.names = F, col.names = T)
-    }
-}
+# View top 5 terms in the first element of the list
+head(upEnriched_dd[[1]], 5)
 
 #' 
 #' # Plot enrichment
 #' 
-#' Demonstrate using different paramters to plot enrichment.
+#' Demonstrate using different paramters to plot enrichment using the `plotEnrich` function.
 #' 
 ## ----plot-results, fig.width = 8, fig.height = 6, fig.align = "center", dpi = 100----
 plotEnrich(upEnriched_go[[3]], showTerms = 20, numChar = 50, y = "Count", orderBy = "P.value")
@@ -349,6 +213,8 @@ plotEnrich(upEnriched_dd[[2]], showTerms = 10, numChar = 30, y = "Count", orderB
 
 #' 
 #' # Output results to files
+#' 
+#' Use the `printEnrich` function to output Enrichr results to tab-delimited text files.
 #' 
 ## ----output-results-----------------------------------------------------------
 printEnrich(upEnriched_go, prefix = "enrichr-GO-up", showTerms = 20)
