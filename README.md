@@ -50,10 +50,10 @@ wget https://raw.githubusercontent.com/ycl6/GO-Enrichment-Analysis-Demo/master/D
 
 ```R
 # From CRAN
-install.packages(c("devtools", "data.table"))
+install.packages(c("devtools", "data.table", "enrichR"))
 
 # From Bioconductor
-if (!requireNamespace("BiocManager", quietly = TRUE))
+if(!requireNamespace("BiocManager", quietly = TRUE))
 install.packages("BiocManager")
 BiocManager::install(c("org.Mm.eg.db", "clusterProfiler", "enrichplot"))
 
